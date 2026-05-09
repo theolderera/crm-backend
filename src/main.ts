@@ -16,8 +16,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : true;
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -33,8 +37,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  await app.listen(4000);
-  console.log('CRM Backend running on http://localhost:4000');
+  const port = process.env.PORT || 4000;
+  await app.listen(port);
+  console.log(`CRM Backend running on port ${port}`);
 }
 
 bootstrap();

@@ -1,4 +1,6 @@
-node_modules
-dist
+node_modules/
+dist/
+*.sqlite
 .env
-*.tsbuildinfo
+tsconfig.tsbuildinfo
+scratch/
