@@ -8,7 +8,8 @@
     "start": "node dist/main",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "start:prod": "node dist/main",
-    "seed": "ts-node --transpile-only src/seed.ts"
+    "seed": "ts-node --transpile-only src/seed.ts",
+    "postinstall": "npm run build"
   },
   "keywords": [],
   "author": "",
