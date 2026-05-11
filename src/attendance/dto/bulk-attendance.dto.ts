@@ -1,4 +1,4 @@
-import { IsArray, ValidateNested, IsInt, IsPositive, IsString, IsBoolean, Matches } from 'class-validator';
+import { IsArray, ValidateNested, IsInt, IsPositive, IsString, IsBoolean, Matches, IsOptional, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class AttendanceItem {
@@ -8,6 +8,16 @@ class AttendanceItem {
 
   @IsBoolean()
   present: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(120)
+  lateMinutes?: number | null;
+
+  @IsOptional()
+  @IsString()
+  lateNote?: string | null;
 }
 
 export class BulkAttendanceDto {

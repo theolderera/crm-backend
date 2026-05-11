@@ -28,6 +28,12 @@ export class Attendance {
   @Column({ type: 'boolean', default: false })
   present: boolean;
 
+  @Column({ type: 'integer', nullable: true, default: null })
+  lateMinutes: number | null;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  lateNote: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

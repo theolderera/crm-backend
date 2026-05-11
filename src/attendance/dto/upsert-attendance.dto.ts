@@ -1,4 +1,4 @@
-import { IsInt, IsPositive, IsString, IsBoolean, Matches } from 'class-validator';
+import { IsInt, IsPositive, IsString, IsBoolean, Matches, IsOptional, Min, Max } from 'class-validator';
 
 export class UpsertAttendanceDto {
   @IsInt()
@@ -11,4 +11,14 @@ export class UpsertAttendanceDto {
 
   @IsBoolean()
   present: boolean;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(120)
+  lateMinutes?: number | null;
+
+  @IsOptional()
+  @IsString()
+  lateNote?: string | null;
 }

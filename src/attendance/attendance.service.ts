@@ -32,21 +32,33 @@ export class AttendanceService {
     });
     if (existing) {
       existing.present = dto.present;
+      existing.lateMinutes = dto.lateMinutes ?? null;
+      existing.lateNote = dto.lateNote ?? null;
       return this.attendanceRepo.save(existing);
     }
-    return this.attendanceRepo.save(this.attendanceRepo.create(dto));
+    return this.attendanceRepo.save(
+      this.attendanceRepo.create({
+        studentId: dto.studentId,
+        date: dto.date,
+        present: dto.present,
+        lateMinutes: dto.lateMinutes ?? null,
+        lateNote: dto.lateNote ?? null,
+      }),
+    );
   }
 
   async bulkUpsert(dto: BulkAttendanceDto): Promise<void> {
     if (!dto.records.length) return;
-    await this.attendanceRepo.upsert(
-      dto.records.map((r) => ({
+    // Use manual upsert to handle lateMinutes and lateNote
+    for (const r of dto.records) {
+      await this.upsert({
         studentId: r.studentId,
         date: dto.date,
         present: r.present,
-      })),
-      ['studentId', 'date'],
-    );
+        lateMinutes: r.lateMinutes ?? null,
+        lateNote: r.lateNote ?? null,
+      });
+    }
   }
 
   private toDateStr(date: Date): string {
