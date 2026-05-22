@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GroupsModule } from './groups/groups.module';
 import { StudentsModule } from './students/students.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { ReportsModule } from './reports/reports.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
@@ -43,6 +44,7 @@ import { User } from './users/user.entity';
     GroupsModule,
     StudentsModule,
     AttendanceModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
