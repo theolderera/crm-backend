@@ -125,6 +125,7 @@ const tableBorders = {
 
 /* ─── Summary table (label row + value row) ─── */
 function summaryTable(report: AttendanceReport): Table {
+  const s = report.summary;
   const w = 100 / 8;
   const labels = [
     'Талабагон',
