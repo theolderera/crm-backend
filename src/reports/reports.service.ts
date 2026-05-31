@@ -20,6 +20,8 @@ export interface StudentReportRow {
   absent: number;
   late: number;
   lateMinutes: number;
+  excused: number;
+  hwSolved: number;
   /** Attendance percentage, 0–100 (rounded). */
   rate: number;
 }
@@ -41,6 +43,8 @@ export interface AttendanceReport {
     absent: number;
     late: number;
     lateMinutes: number;
+    excused: number;
+    hwSolved: number;
     /** Average attendance across the whole group, 0–100. */
     avgRate: number;
   };
@@ -121,17 +125,26 @@ export class ReportsService {
       let present = 0;
       let late = 0;
       let lateMinutes = 0;
+      let excused = 0;
+      let hwSolved = 0;
       for (const date of sessionDates) {
         const rec = recMap.get(`${s.id}_${date}`);
-        if (rec && rec.present) {
-          present++;
-          if (rec.lateMinutes != null && rec.lateMinutes > 0) {
-            late++;
-            lateMinutes += rec.lateMinutes;
+        if (rec) {
+          if (rec.present) {
+            present++;
+            if (rec.lateMinutes != null && rec.lateMinutes > 0) {
+              late++;
+              lateMinutes += rec.lateMinutes;
+            }
+          } else if (rec.excused) {
+            excused++;
+          }
+          if (rec.hwSolved != null && rec.hwSolved > 0) {
+            hwSolved += rec.hwSolved;
           }
         }
       }
-      const absent = totalSessions - present;
+      const absent = totalSessions - present - excused;
       const rate =
         totalSessions > 0 ? Math.round((present / totalSessions) * 100) : 0;
       return {
@@ -143,6 +156,8 @@ export class ReportsService {
         absent,
         late,
         lateMinutes,
+        excused,
+        hwSolved,
         rate,
       };
     });
@@ -151,6 +166,8 @@ export class ReportsService {
     const absent = rows.reduce((a, r) => a + r.absent, 0);
     const late = rows.reduce((a, r) => a + r.late, 0);
     const lateMinutes = rows.reduce((a, r) => a + r.lateMinutes, 0);
+    const excused = rows.reduce((a, r) => a + r.excused, 0);
+    const hwSolved = rows.reduce((a, r) => a + r.hwSolved, 0);
     const denominator = rows.length * totalSessions;
     const avgRate =
       denominator > 0 ? Math.round((present / denominator) * 100) : 0;
@@ -179,6 +196,8 @@ export class ReportsService {
         absent,
         late,
         lateMinutes,
+        excused,
+        hwSolved,
         avgRate,
       },
       students: rows,

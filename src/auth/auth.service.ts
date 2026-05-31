@@ -20,7 +20,7 @@ export class AuthService {
     private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async register(dto: RegisterDto) {
     const byEmail = await this.userRepo.findOne({ where: { email: dto.email } });
@@ -31,10 +31,10 @@ export class AuthService {
 
     const hashed = await bcrypt.hash(dto.password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    const user = this.userRepo.create({ 
-      ...dto, 
-      password: hashed, 
+
+    const user = this.userRepo.create({
+      ...dto,
+      password: hashed,
       role: UserRole.PENDING,
       verificationCode,
       isEmailVerified: false
@@ -50,7 +50,7 @@ export class AuthService {
   async verifyEmail(userId: number, code: string) {
     const user = await this.userRepo.findOne({ where: { id: userId } });
     if (!user) throw new BadRequestException('Корбар ёфт нашуд');
-    
+
     if (user.verificationCode !== code) {
       throw new BadRequestException('Коди тасдиқ нодуруст аст');
     }

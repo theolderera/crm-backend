@@ -34,6 +34,15 @@ export class Attendance {
   @Column({ type: 'varchar', nullable: true, default: null })
   lateNote: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  excused: boolean;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  excusedReason: string | null;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  hwSolved: number | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

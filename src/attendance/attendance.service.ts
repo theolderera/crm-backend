@@ -34,6 +34,9 @@ export class AttendanceService {
       existing.present = dto.present;
       existing.lateMinutes = dto.lateMinutes ?? null;
       existing.lateNote = dto.lateNote ?? null;
+      existing.excused = dto.excused ?? false;
+      existing.excusedReason = dto.excusedReason ?? null;
+      existing.hwSolved = dto.hwSolved ?? null;
       return this.attendanceRepo.save(existing);
     }
     return this.attendanceRepo.save(
@@ -43,6 +46,9 @@ export class AttendanceService {
         present: dto.present,
         lateMinutes: dto.lateMinutes ?? null,
         lateNote: dto.lateNote ?? null,
+        excused: dto.excused ?? false,
+        excusedReason: dto.excusedReason ?? null,
+        hwSolved: dto.hwSolved ?? null,
       }),
     );
   }
@@ -57,6 +63,9 @@ export class AttendanceService {
         present: r.present,
         lateMinutes: r.lateMinutes ?? null,
         lateNote: r.lateNote ?? null,
+        excused: r.excused ?? false,
+        excusedReason: r.excusedReason ?? null,
+        hwSolved: r.hwSolved ?? null,
       });
     }
   }

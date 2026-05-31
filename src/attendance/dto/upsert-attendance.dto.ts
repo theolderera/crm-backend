@@ -21,4 +21,17 @@ export class UpsertAttendanceDto {
   @IsOptional()
   @IsString()
   lateNote?: string | null;
+
+  @IsOptional()
+  @IsBoolean()
+  excused?: boolean;
+
+  @IsOptional()
+  @IsString()
+  excusedReason?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  hwSolved?: number | null;
 }

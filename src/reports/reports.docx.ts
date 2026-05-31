@@ -125,15 +125,16 @@ const tableBorders = {
 
 /* ─── Summary table (label row + value row) ─── */
 function summaryTable(report: AttendanceReport): Table {
-  const s = report.summary;
-  const w = 100 / 6;
+  const w = 100 / 8;
   const labels = [
     'Талабагон',
     'Ҷаласаҳо',
     'Ҳузури миёна',
     'Ҳозириҳо',
     'Ғоибиҳо',
+    'Сабабнок',
     'Дер омадан',
+    'Масъалаҳо',
   ];
   const values = [
     String(s.totalStudents),
@@ -141,7 +142,9 @@ function summaryTable(report: AttendanceReport): Table {
     `${s.avgRate}%`,
     String(s.present),
     String(s.absent),
+    String(s.excused),
     String(s.late),
+    String(s.hwSolved),
   ];
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
@@ -177,14 +180,16 @@ function summaryTable(report: AttendanceReport): Table {
 /* ─── Detailed per-student table ─── */
 function detailTable(report: AttendanceReport): Table {
   const headers: { label: string; width: number; align: Align }[] = [
-    { label: '№', width: 6, align: AlignmentType.CENTER },
-    { label: 'Ному насаб', width: 26, align: AlignmentType.LEFT },
-    { label: 'Ҷаласа', width: 11, align: AlignmentType.CENTER },
-    { label: 'Ҳозир', width: 11, align: AlignmentType.CENTER },
-    { label: 'Ғоиб', width: 11, align: AlignmentType.CENTER },
-    { label: 'Дер', width: 10, align: AlignmentType.CENTER },
-    { label: 'Дер (дақ)', width: 13, align: AlignmentType.CENTER },
-    { label: 'Ҳузур', width: 12, align: AlignmentType.CENTER },
+    { label: '№', width: 4, align: AlignmentType.CENTER },
+    { label: 'Ному насаб', width: 22, align: AlignmentType.LEFT },
+    { label: 'Ҷаласа', width: 9, align: AlignmentType.CENTER },
+    { label: 'Ҳозир', width: 9, align: AlignmentType.CENTER },
+    { label: 'Ғоиб', width: 9, align: AlignmentType.CENTER },
+    { label: 'Саб.', width: 9, align: AlignmentType.CENTER },
+    { label: 'Дер', width: 9, align: AlignmentType.CENTER },
+    { label: 'Дер(д)', width: 10, align: AlignmentType.CENTER },
+    { label: 'Масъала', width: 9, align: AlignmentType.CENTER },
+    { label: 'Ҳузур', width: 10, align: AlignmentType.CENTER },
   ];
 
   const headerRow = new TableRow({
@@ -205,14 +210,16 @@ function detailTable(report: AttendanceReport): Table {
     const fill = i % 2 === 1 ? ROW_ALT : undefined;
     return new TableRow({
       children: [
-        textCell(String(i + 1), { width: 6, align: AlignmentType.CENTER, color: MUTED, fill }),
-        textCell(row.name, { width: 26, fill, bold: true }),
-        textCell(String(row.sessions), { width: 11, align: AlignmentType.CENTER, color: MUTED, fill }),
-        textCell(String(row.present), { width: 11, align: AlignmentType.CENTER, color: GREEN, bold: true, fill }),
-        textCell(String(row.absent), { width: 11, align: AlignmentType.CENTER, color: row.absent > 0 ? RED : MUTED, fill }),
-        textCell(String(row.late), { width: 10, align: AlignmentType.CENTER, color: row.late > 0 ? AMBER : MUTED, fill }),
-        textCell(row.lateMinutes > 0 ? String(row.lateMinutes) : '—', { width: 13, align: AlignmentType.CENTER, color: row.lateMinutes > 0 ? AMBER : MUTED, fill }),
-        textCell(`${row.rate}%`, { width: 12, align: AlignmentType.CENTER, color: rateColor(row.rate), bold: true, fill }),
+        textCell(String(i + 1), { width: 4, align: AlignmentType.CENTER, color: MUTED, fill }),
+        textCell(row.name, { width: 22, fill, bold: true }),
+        textCell(String(row.sessions), { width: 9, align: AlignmentType.CENTER, color: MUTED, fill }),
+        textCell(String(row.present), { width: 9, align: AlignmentType.CENTER, color: GREEN, bold: true, fill }),
+        textCell(String(row.absent), { width: 9, align: AlignmentType.CENTER, color: row.absent > 0 ? RED : MUTED, fill }),
+        textCell(String(row.excused), { width: 9, align: AlignmentType.CENTER, color: row.excused > 0 ? RED : MUTED, fill }),
+        textCell(String(row.late), { width: 9, align: AlignmentType.CENTER, color: row.late > 0 ? AMBER : MUTED, fill }),
+        textCell(row.lateMinutes > 0 ? String(row.lateMinutes) : '—', { width: 10, align: AlignmentType.CENTER, color: row.lateMinutes > 0 ? AMBER : MUTED, fill }),
+        textCell(row.hwSolved > 0 ? String(row.hwSolved) : '—', { width: 9, align: AlignmentType.CENTER, color: INDIGO, fill }),
+        textCell(`${row.rate}%`, { width: 10, align: AlignmentType.CENTER, color: rateColor(row.rate), bold: true, fill }),
       ],
     });
   });
