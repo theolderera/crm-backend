@@ -9,6 +9,7 @@ import {
 export enum UserRole {
   PENDING = 'PENDING',
   MENTOR = 'MENTOR',
+  TEACHER = 'TEACHER',
   ADMIN = 'ADMIN',
 }
 

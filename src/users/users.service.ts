@@ -21,6 +21,25 @@ export class UsersService {
     return users.map(({ password, verificationCode, ...u }) => u);
   }
 
+  /** Search for users to assign as main teacher (PENDING or TEACHER) */
+  async searchPendingUsers(q: string) {
+    if (!q || q.length < 2) return [];
+    
+    const queryBuilder = this.userRepo.createQueryBuilder('user')
+      .where('(user.role = :pending OR user.role = :teacher)', { 
+        pending: UserRole.PENDING, 
+        teacher: UserRole.TEACHER 
+      })
+      .andWhere(
+        '(LOWER(user.firstName) LIKE LOWER(:q) OR LOWER(user.lastName) LIKE LOWER(:q) OR user.phone LIKE :q OR LOWER(user.email) LIKE LOWER(:q))',
+        { q: `%${q}%` }
+      )
+      .take(10);
+      
+    const users = await queryBuilder.getMany();
+    return users.map(({ password, verificationCode, ...u }) => u);
+  }
+
   /** Get single user with their groups and students */
   async findOneDetailed(id: number) {
     const user = await this.userRepo.findOne({ where: { id } });

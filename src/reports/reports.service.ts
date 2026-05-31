@@ -89,12 +89,12 @@ export class ReportsService {
 
     const group = await this.groupRepo.findOne({
       where: { id: query.groupId },
-      relations: ['students', 'mentor'],
+      relations: ['students', 'mentor', 'teacher', 'teacher2'],
     });
     if (!group) {
       throw new NotFoundException(`Гурӯҳ #${query.groupId} ёфт нашуд`);
     }
-    if (role !== 'ADMIN' && group.mentorId !== userId) {
+    if (role !== 'ADMIN' && group.mentorId !== userId && group.teacherId !== userId && group.teacher2Id !== userId) {
       throw new ForbiddenException('Шумо ба ин гурӯҳ дастрасӣ надоред');
     }
 

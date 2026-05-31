@@ -31,6 +31,20 @@ export class Group {
   @JoinColumn({ name: 'mentorId' })
   mentor: User;
 
+  @Column({ nullable: true })
+  teacherId: number;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'teacherId' })
+  teacher: User;
+
+  @Column({ nullable: true })
+  teacher2Id: number;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'teacher2Id' })
+  teacher2: User;
+
   @OneToMany(() => Student, (student) => student.group, { cascade: true })
   students: Student[];
 

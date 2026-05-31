@@ -32,6 +32,13 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('search')
+  @Roles('ADMIN', 'MENTOR')
+  searchPending(@Request() req: any) {
+    const q = req.query.q as string;
+    return this.usersService.searchPendingUsers(q);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOneDetailed(id);

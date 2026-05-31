@@ -18,7 +18,7 @@ import { Roles } from '../auth/roles.decorator';
 
 @Controller('attendance')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('MENTOR', 'ADMIN')
+@Roles('MENTOR', 'TEACHER', 'ADMIN')
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
@@ -31,11 +31,13 @@ export class AttendanceController {
   }
 
   @Post()
+  @Roles('MENTOR', 'ADMIN')
   upsert(@Body() dto: UpsertAttendanceDto) {
     return this.attendanceService.upsert(dto);
   }
 
   @Post('bulk')
+  @Roles('MENTOR', 'ADMIN')
   @HttpCode(HttpStatus.NO_CONTENT)
   bulkUpsert(@Body() dto: BulkAttendanceDto) {
     return this.attendanceService.bulkUpsert(dto);

@@ -21,7 +21,7 @@ import { Roles } from '../auth/roles.decorator';
 
 @Controller('students')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('MENTOR', 'ADMIN')
+@Roles('MENTOR', 'TEACHER', 'ADMIN')
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
@@ -37,16 +37,19 @@ export class StudentsController {
   }
 
   @Post()
+  @Roles('MENTOR', 'ADMIN')
   create(@Body() dto: CreateStudentDto) {
     return this.studentsService.create(dto);
   }
 
   @Patch(':id')
+  @Roles('MENTOR', 'ADMIN')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStudentDto) {
     return this.studentsService.update(id, dto);
   }
 
   @Delete(':id')
+  @Roles('MENTOR', 'ADMIN')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.studentsService.remove(id);
