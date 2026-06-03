@@ -1,54 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter;
-
-  constructor(private configService: ConfigService) {
-    const user = this.configService.get<string>('MAIL_USER');
-    const pass = this.configService.get<string>('MAIL_PASS');
-    const host = this.configService.get<string>('MAIL_HOST') || 'smtp.gmail.com';
-    const port = Number(this.configService.get<number>('MAIL_PORT')) || 587;
-    console.log(`MailService initializing: ${host}:${port} (user: ${user ? 'LOADED' : 'MISSING'})`);
-    
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user,
-        pass,
-      },
-    });
-  }
+  constructor(private configService: ConfigService) {}
 
   async sendVerificationCode(email: string, code: string) {
-    const mailOptions = {
-      from: `"CRM System" <${this.configService.get<string>('MAIL_USER')}>`,
-      to: email,
-      subject: 'Email Verification Code',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-          <h2 style="color: #4f46e5; text-align: center;">Тасдиқи имейл</h2>
-          <p>Салом!</p>
-          <p>Барои анҷом додани қайд дар системаи CRM, лутфан коди зеринро ворид кунед:</p>
-          <div style="background-color: #f3f4f6; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1f2937; border-radius: 8px; margin: 20px 0;">
-            ${code}
-          </div>
-          <p>Ин код барои 10 дақиқа эътибор дорад.</p>
-          <p>Агар шумо ин дархостро накарда бошед, ин имейлро нодида гиред.</p>
-          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 20px 0;">
-          <p style="font-size: 12px; color: #6b7280; text-align: center;">CRM System &copy; 2026</p>
-        </div>
-      `,
-    };
+    const serviceId = this.configService.get<string>('EMAILJS_SERVICE_ID');
+    const templateId = this.configService.get<string>('EMAILJS_TEMPLATE_ID');
+    const publicKey = this.configService.get<string>('EMAILJS_PUBLIC_KEY');
+    const privateKey = this.configService.get<string>('EMAILJS_PRIVATE_KEY');
+
+    if (!serviceId || !templateId || !publicKey) {
+      console.error('EmailJS credentials missing in .env');
+      return false;
+    }
 
     try {
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log(`Email sent successfully to ${email}. MessageId: ${result.messageId}`);
+      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          service_id: serviceId,
+          template_id: templateId,
+          user_id: publicKey,
+          accessToken: privateKey,
+          template_params: {
+            to_email: email,
+            code: code,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('FAILED to send email via EmailJS:', errorText);
+        throw new InternalServerErrorException('Хатогӣ ҳангоми фиристодани почта');
+      }
+
+      console.log(`Email sent successfully via EmailJS to ${email}.`);
       return true;
-    } catch (error) {
-      console.error('FAILED to send email:', error);
+    } catch (error: any) {
+      console.error('FAILED to send email via EmailJS:', error);
       throw error;
     }
   }
