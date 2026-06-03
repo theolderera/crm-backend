@@ -26,6 +26,11 @@ export class ReportsController {
     return this.reportsService.buildReport(query, req.user.id, req.user.role);
   }
 
+  @Get('global-leaderboard')
+  getGlobalLeaderboard(@Query('from') from: string, @Query('to') to: string, @Request() req: any) {
+    return this.reportsService.getGlobalLeaderboard(req.user.id, req.user.role, from, to);
+  }
+
   /** The same report rendered as a downloadable Word (.docx) document. */
   @Get('attendance/docx')
   async getAttendanceDocx(

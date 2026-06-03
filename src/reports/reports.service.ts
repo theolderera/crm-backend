@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Group } from '../groups/group.entity';
+import { Student } from '../students/student.entity';
 import { Attendance } from '../attendance/attendance.entity';
 import { ReportQueryDto } from './dto/report-query.dto';
 
@@ -56,6 +57,8 @@ export class ReportsService {
   constructor(
     @InjectRepository(Group)
     private readonly groupRepo: Repository<Group>,
+    @InjectRepository(Student)
+    private readonly studentRepo: Repository<Student>,
     @InjectRepository(Attendance)
     private readonly attendanceRepo: Repository<Attendance>,
   ) {}
@@ -202,5 +205,58 @@ export class ReportsService {
       },
       students: rows,
     };
+  }
+
+  async getGlobalLeaderboard(userId: number, role: string, from?: string, to?: string) {
+    // Fetch all students with their attendance records and group info
+    const students = await this.studentRepo.find({
+      relations: ['group', 'attendances'],
+    });
+
+    const rankedStudents = students.map((s) => {
+      let presentCount = 0;
+      let lateCount = 0;
+      let excusedCount = 0;
+      let hwSolvedSum = 0;
+
+      s.attendances?.forEach((a) => {
+        if (from && a.date < from) return;
+        if (to && a.date > to) return;
+
+        if (a.present) presentCount++;
+        if (a.lateMinutes > 0) lateCount++;
+        if (a.excused) excusedCount++;
+        if (a.hwSolved) hwSolvedSum += a.hwSolved;
+      });
+
+      const presentOnTime = presentCount - lateCount;
+      const xp = (presentOnTime * 10) + (lateCount * 7) + (excusedCount * 5) + (hwSolvedSum * 5);
+
+      return {
+        id: s.id,
+        name: [s.firstName, s.lastName].filter(Boolean).join(' '),
+        groupName: s.group?.name || 'Бе гурӯҳ',
+        groupId: s.group?.id || null,
+        present: presentCount,
+        late: lateCount,
+        excused: excusedCount,
+        hwSolved: hwSolvedSum,
+        xp,
+      };
+    });
+
+    // Sort descending by XP, then by name
+    rankedStudents.sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name));
+
+    // Assign rank
+    let currentRank = 1;
+    rankedStudents.forEach((s, i) => {
+      if (i > 0 && s.xp < rankedStudents[i - 1].xp) {
+        currentRank = i + 1;
+      }
+      (s as any).rank = currentRank;
+    });
+
+    return rankedStudents;
   }
 }
