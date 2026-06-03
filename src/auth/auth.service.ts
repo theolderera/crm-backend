@@ -41,7 +41,12 @@ export class AuthService {
     });
     await this.userRepo.save(user);
 
-    await this.mailService.sendVerificationCode(user.email, verificationCode);
+    try {
+      await this.mailService.sendVerificationCode(user.email, verificationCode);
+    } catch (error) {
+      await this.userRepo.delete(user.id);
+      throw new BadRequestException('Хатогӣ ҳангоми фиристодани почта. Лутфан суроғаро санҷед ё ба танзимоти почта диққат диҳед.');
+    }
 
     const token = this.jwtService.sign({ sub: user.id, role: user.role });
     return { token, user: this.sanitize(user) };
