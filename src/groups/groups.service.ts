@@ -110,7 +110,7 @@ export class GroupsService {
 
     await this.groupRepo.save(group);
 
-    if (teacher.role === UserRole.PENDING) {
+    if (teacher.role === UserRole.USER) {
       teacher.role = UserRole.TEACHER;
       await this.userRepo.save(teacher);
     }

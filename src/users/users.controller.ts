@@ -72,7 +72,7 @@ export class UsersController {
 
   @Post('profile/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
-  async uploadAvatar(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+  async uploadAvatar(@Request() req: any, @UploadedFile() file: any) {
     if (!file) throw new Error('Файл ёфт нашуд');
     return this.usersService.updateAvatar(req.user.id, file.filename);
   }
