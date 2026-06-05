@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { Group } from '../groups/group.entity';
 import { Student } from '../students/student.entity';
+import { Attendance } from '../attendance/attendance.entity';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +16,8 @@ export class UsersService {
     private readonly groupRepo: Repository<Group>,
     @InjectRepository(Student)
     private readonly studentRepo: Repository<Student>,
+    @InjectRepository(Attendance)
+    private readonly attendanceRepo: Repository<Attendance>,
   ) {}
 
   async findAll() {
@@ -27,7 +31,7 @@ export class UsersService {
     
     const queryBuilder = this.userRepo.createQueryBuilder('user')
       .where('(user.role = :pending OR user.role = :teacher)', { 
-        pending: UserRole.PENDING, 
+        pending: UserRole.USER, 
         teacher: UserRole.TEACHER 
       })
       .andWhere(
@@ -53,6 +57,107 @@ export class UsersService {
 
     const { password, verificationCode, ...rest } = user;
     return { ...rest, groups };
+  }
+
+  /** Get profile with stats */
+  async getProfile(userId: number) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Корбар ёфт нашуд');
+
+    const { password, verificationCode, ...userData } = user;
+
+    // Get groups where user is mentor
+    const mentorGroups = await this.groupRepo.find({
+      where: { mentorId: userId },
+      relations: ['students'],
+    });
+
+    // Get groups where user is teacher
+    const teacherGroups = await this.groupRepo
+      .createQueryBuilder('g')
+      .where('g.teacherId = :uid OR g.teacher2Id = :uid', { uid: userId })
+      .leftJoinAndSelect('g.students', 'students')
+      .getMany();
+
+    const allGroups = [...mentorGroups, ...teacherGroups];
+    const totalStudents = allGroups.reduce((acc, g) => acc + (g.students?.length || 0), 0);
+
+    // Calculate average attendance
+    let avgAttendance = 0;
+    if (totalStudents > 0) {
+      const studentIds = allGroups.flatMap(g => (g.students || []).map(s => s.id));
+      if (studentIds.length > 0) {
+        const totalRecords = await this.attendanceRepo
+          .createQueryBuilder('a')
+          .where('a.studentId IN (:...ids)', { ids: studentIds })
+          .getCount();
+        const presentRecords = await this.attendanceRepo
+          .createQueryBuilder('a')
+          .where('a.studentId IN (:...ids)', { ids: studentIds })
+          .andWhere('a.present = :present', { present: true })
+          .getCount();
+        avgAttendance = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 0;
+      }
+    }
+
+    return {
+      ...userData,
+      stats: {
+        totalGroups: allGroups.length,
+        mentorGroups: mentorGroups.length,
+        teacherGroups: teacherGroups.length,
+        totalStudents,
+        avgAttendance,
+      },
+    };
+  }
+
+  /** Update profile fields */
+  async updateProfile(userId: number, data: { firstName?: string; lastName?: string; phone?: string }) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Корбар ёфт нашуд');
+
+    // Check phone uniqueness if changing
+    if (data.phone && data.phone !== user.phone) {
+      const existing = await this.userRepo.findOne({ where: { phone: data.phone } });
+      if (existing) throw new BadRequestException('Ин рақам аллакай истифода мешавад');
+    }
+
+    if (data.firstName) user.firstName = data.firstName;
+    if (data.lastName !== undefined) user.lastName = data.lastName;
+    if (data.phone) user.phone = data.phone;
+
+    await this.userRepo.save(user);
+    const { password, verificationCode, ...rest } = user;
+    return rest;
+  }
+
+  /** Change password */
+  async changePassword(userId: number, oldPassword: string, newPassword: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Корбар ёфт нашуд');
+
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new BadRequestException('Рамзи кунунӣ нодуруст аст');
+
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Рамзи нав бояд ҳадди ақал 6 аломат бошад');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.userRepo.save(user);
+    return { success: true, message: 'Рамз бомуваффақият иваз шуд' };
+  }
+
+  /** Update avatar */
+  async updateAvatar(userId: number, filename: string) {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Корбар ёфт нашуд');
+
+    user.avatar = filename;
+    await this.userRepo.save(user);
+    const { password, verificationCode, ...rest } = user;
+    return rest;
   }
 
   async updateRole(id: number, role: UserRole) {

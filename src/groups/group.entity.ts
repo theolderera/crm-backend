@@ -11,9 +11,10 @@ import {
 } from 'typeorm';
 import { Student } from '../students/student.entity';
 import { User } from '../users/user.entity';
+import { CourseMonth } from './course-month.entity';
 
 @Entity('groups')
-@Index(['name', 'mentorId'], { unique: true })
+@Index(['name', 'mentorId', 'courseMonthId'], { unique: true })
 export class Group {
   @PrimaryGeneratedColumn()
   id: number;
@@ -26,6 +27,13 @@ export class Group {
 
   @Column({ nullable: true })
   mentorId: number;
+
+  @Column({ nullable: true })
+  courseMonthId: number;
+
+  @ManyToOne(() => CourseMonth, (cm) => cm.groups, { nullable: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'courseMonthId' })
+  courseMonth: CourseMonth;
 
   @ManyToOne(() => User, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'mentorId' })

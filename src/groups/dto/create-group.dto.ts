@@ -11,4 +11,7 @@ export class CreateGroupDto {
   @IsOptional()
   @MaxLength(500)
   description?: string;
+
+  @IsNotEmpty()
+  courseMonthId: number;
 }

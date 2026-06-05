@@ -8,10 +8,14 @@ import { ReportsModule } from './reports/reports.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { MailModule } from './mail/mail.module';
+import { TicketsModule } from './tickets/tickets.module';
 import { Group } from './groups/group.entity';
 import { Student } from './students/student.entity';
 import { Attendance } from './attendance/attendance.entity';
+import { CourseMonth } from './groups/course-month.entity';
 import { User } from './users/user.entity';
+import { Ticket } from './tickets/ticket.entity';
+import { Message } from './tickets/message.entity';
 
 @Module({
   imports: [
@@ -25,7 +29,7 @@ import { User } from './users/user.entity';
           return {
             type: 'postgres' as const,
             url: databaseUrl,
-            entities: [Group, Student, Attendance, User],
+            entities: [Group, Student, Attendance, User, Ticket, Message, CourseMonth],
             synchronize: true,
             ssl: { rejectUnauthorized: false },
           };
@@ -33,7 +37,7 @@ import { User } from './users/user.entity';
         return {
           type: 'better-sqlite3' as const,
           database: config.get<string>('DATABASE_NAME') || 'crm.sqlite',
-          entities: [Group, Student, Attendance, User],
+          entities: [Group, Student, Attendance, User, Ticket, Message, CourseMonth],
           synchronize: true,
         };
       },
@@ -45,6 +49,7 @@ import { User } from './users/user.entity';
     StudentsModule,
     AttendanceModule,
     ReportsModule,
+    TicketsModule,
   ],
 })
 export class AppModule {}

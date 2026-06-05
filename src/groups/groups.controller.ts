@@ -25,6 +25,23 @@ import { Roles } from '../auth/roles.decorator';
 export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
+  @Post('months')
+  @Roles('MENTOR', 'ADMIN')
+  createCourseMonth(@Request() req: any) {
+    return this.groupsService.createCourseMonth(req.user.id);
+  }
+
+  @Post('migrate')
+  @Roles('MENTOR', 'ADMIN')
+  migrateGroups(@Request() req: any) {
+    return this.groupsService.migrateOldGroups(req.user.id);
+  }
+
+  @Get('months')
+  getCourseMonths(@Request() req: any) {
+    return this.groupsService.getCourseMonths(req.user.id, req.user.role);
+  }
+
   @Get()
   findAll(@Request() req: any) {
     return this.groupsService.findAll(req.user.id, req.user.role);

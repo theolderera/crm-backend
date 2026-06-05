@@ -35,7 +35,7 @@ export class AuthService {
     const user = this.userRepo.create({
       ...dto,
       password: hashed,
-      role: UserRole.PENDING,
+      role: UserRole.USER,
       verificationCode,
       isEmailVerified: false
     });

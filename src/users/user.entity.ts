@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 export enum UserRole {
-  PENDING = 'PENDING',
+  USER = 'USER',
   MENTOR = 'MENTOR',
   TEACHER = 'TEACHER',
   ADMIN = 'ADMIN',
@@ -33,7 +33,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'text', default: UserRole.PENDING })
+  @Column({ type: 'text', default: UserRole.USER })
   role: UserRole;
 
   @Column({ default: false })
@@ -41,6 +41,9 @@ export class User {
 
   @Column({ nullable: true })
   verificationCode: string;
+
+  @Column({ nullable: true })
+  avatar: string;
 
   @CreateDateColumn()
   createdAt: Date;
