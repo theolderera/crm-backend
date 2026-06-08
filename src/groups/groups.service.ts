@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { Group } from './group.entity';
 import { CourseMonth } from './course-month.entity';
 import { User, UserRole } from '../users/user.entity';
@@ -197,7 +197,7 @@ export class GroupsService {
 
     // Find all groups for this mentor without a courseMonthId
     const groups = await this.groupRepo.find({
-      where: { mentorId: userId, courseMonthId: null as any }
+      where: { mentorId: userId, courseMonthId: IsNull() }
     });
 
     for (const g of groups) {
@@ -212,7 +212,7 @@ export class GroupsService {
     if (role !== UserRole.ADMIN) {
       // Auto-migrate any unassigned groups for this mentor before fetching
       const unassignedGroupsCount = await this.groupRepo.count({
-        where: { mentorId: userId, courseMonthId: null as any }
+        where: { mentorId: userId, courseMonthId: IsNull() }
       });
       if (unassignedGroupsCount > 0) {
         await this.migrateOldGroups(userId);
