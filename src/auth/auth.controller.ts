@@ -12,7 +12,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
-  ) {}
+  ) { }
 
   @Get('get-code/:email')
   async getCode(@Param('email') email: string) {

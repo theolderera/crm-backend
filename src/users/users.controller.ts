@@ -51,7 +51,7 @@ class ChangePasswordDto {
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // ─── Profile endpoints (all authenticated users) ───
 
